@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <h3>
+            Ismertesse a *nix rendszerek biztonsági rendszereit, felhasználó és jogosultság kezelési technikáit! 
+            Térjen ki a műszaki részletekre a következők kapcsán: felhasználók, csoportok, processzusok, fájlok. Ismertesse a MAC és DAC közti különbséget és mondja el! 
+            Említsen olyan általános megfontolásokat, amelyekkel a kiszolgálók biztonsága fokozható! 
+            Mi a privilege separation? Mi a chroot? Mi az SELINUX? Hogyan működnek ezek a megfontolások?
+        </h3>
+        <h3>A *nix biztonsági rendszerei</h3>
+        <h4>Felhasználók</h4>
+        <ul>
+            <li>A UNIX és LINUX operációs rendszerekben minden fájlrendszerbeli objektum, minden processzus hozzáköthető egy felhasználóhoz.</li>
+            <li>A felhasználók nyilvántarthatóak, és nyomonkövethető a tevékenységük egy egyedi azonosítószámmal, a UID-val.</li>
+            <li>A felhasználók nyilvános adatainak tárolására az /etc/passwd, a bizalmas adatok tárolására /etc/shadow fájl szolgál.</li>
+        </ul>
+        <h4>Felhasználók és csoportok</h4>
+        <ul>
+            <li>A csoportok felhasználókat gyűjtő konténer objektumok, amelyek szervezési célokhoz használlhatóak fel. </li>
+            <li>Minden felhasználónak egy elsődleges csoportja van, de lehet bármennyi csoportnak tagja.</li>
+            <li>A felhasználó alpaértelmezett csoportja a UPG (User Primary Group). </li>
+            <li>A felhasználó által létrehozott fájlok a felhasználó elsődleges csoportjához tartoznak.</li>
+        </ul>
+        <h4>Csoportok</h4>
+        <ul>
+            <li>Minden fájlrendszerbeli objektumnak egy felhasználó és egy csoport tulajdonosa van.
+            </li>
+            <li>Egy felhasználónak akármennyi csoporttagsága lehet, és egy csoportnak bármennyi felhasználó lehet tagja.
+            </li>
+            <li>A nyilvános csoport információk az /etc/group fájlban, a bizalmas csoport információk /etc/gshadow fájlban kerülnek tárolásra.
+            </li>
+        </ul>
+        <h4>UID konvenciók</h4>
+        <ul>
+            <li>A 0 a root felhasználó UID-je.</li>
+            <li>1-től 999-ig a UID-k a rendszerfelhasználók számára vannak fenntartva. 
+                Ezek unprivilegizált felhasználók, 
+                amelyek általában daemon processzusokhoz kerülnek hozzárendelésre, 
+                annak érdekében, hogy a hozzáférésük korlátozott legyen.</li>
+            <li>A RedHat linux esetén az első 200 UID statikusan van hozzárendelve felhasználókhoz, a többi dinamikusan kerül kiosztásra.</li>
+            <li>Az 1000-től kezdő UID-k szokásos emberi felhasználókhoz tartoznak.</li>
+            <li>A 65534-es UID a legkevesebb jogosultsággal rendelkező felhasználó (nobody). </li>
+            <li>Ezutóbbi felhasználó általában hálózati felhasználók fájlrendszerbeli objektumokra vonatkozó jogosultságainak kezelésére használatos.</li>
+        </ul>
+        <h4>Fájl hozzáférési jogosultságok</h4>
+        <ul>
+            <li>A fájloknak pontosan egy tulajdonosa és egy csoport tulajdonosa van, a processzusoknak szintén egy tulajdonsoa és egy csoport tulajdonosa van.
+            </li>
+            <li>Egy fájl csak akkor érhető el egy processzuss által, ha azt lehetővé teszik rá vontakozó hozzáférési jogosultságok és tulajdonosi információk.
+            </li>
+            <li>A *nix rendszerekben  a jogosultságok 3 csoprotba vannak rendezve. Az első csoport a tulajdonos felhasználóra, második a tulajdonos csoportra, a harmadik mindenki másra vonatkozik.
+            </li>
+            <li>Mindegyik csoport 3 bináris értéket tartalmaz, amik meghatározzák az olvasási, írási, és végrehajtási jogokat.
+            </li>
+            <li>Van még 3 speciális bit is, ami nem része ennek a csoporosításnak (sticky, setgid, setuid)
+            </li>
+        </ul>        
+        <h4>Jogosultságok különleges esetei</h4>
+        <ul>
+            <li>A könyvtárra vonatkozó írási jog lehetővé teszi a könyvtáron bellüli fájlok átnevezését, törlését, és új fájl hozzáadását.
+            </li>
+            <li>A könyvtárra vonatkozó végrehajtási jog lehetővé teszi a könyvtárba való belépést a cd parancsal, és a tartalmának kilistázását.
+            </li>
+            <li>Könyvtáron végrehajtási jog olvasási jog nélkül lehetetlenné teszi a tartalmának kilistázását. Ugyanakkor megmarad a könyvtárban lévő objektumok olvashatósága, ha ponosan ismert azok neve.
+            </li>
+            <li>Könyvtáron olvasási jog, végrehajtási jog nélkül, a könyvtár tartalmának kiliistázását lehetővé teszi, az elérhetőségüket viszont nem.
+            </li>
+        </ul>
+        <h4>Oktális reprezentáció [1]</h4>
+        <img src="data:image/png;base64,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"/>
+        <ul>
+            <li>A bitek értékei:</li>
+            <ul>
+                <li>írás: 4</li>
+                <li>olvasás: 2</li>
+                <li>végrehajtás: 1</li>
+            </ul>
+            <li>Pl. 754 azt jelenti, hogy </li>
+            <ul>
+                <li>a tulajdonos felhasználónak: írási, olvasási és végrehajtási,</li>
+                <li>a tulajdonos csoportnak: olvasási és végrehajtási,</li>
+                <li>mindenki másnak: írási jogai vannak.</li>
+            </ul>
+        </ul>
+        <h4>Különleges jogosultságok</h4>
+        <ul>
+            <li>ragadó bit (sticky bit): a ragadó bitnek csak akkkor van hatása, ha a végrehajtást jelölő bit is érvényes. Htaására a futtatható fájlok a swap területen maradnak. Olyan könyvtárak esetén, amelyek mindinki számára írhatóak megtiltja a törlést/átnevezést a könytárra és benne található fájlokra is.
+            </li>
+            <li>setuid/setgid bit: A ~ biteknek csak a végrehajtást jelölő bittel együtt van értelme. Amennyiben egy processzus ilyen bittel jelölt fájlból jön létre, a processzus tulajdonosa nem a bejelentkezett felhasználó, hanem a fájl felhasználói, vagy csoport tulajdonosa.
+            </li>
+        </ul>
+        <h4>Processzusok</h4>
+        <ul>
+            <li>Minden processzus saját elkülönített memóriatérrel rendelkezik, egyik processzus sem férhet hozzá egy másik processzus adataihoz.</li>
+            <li>A processzusok azonosítására a PID szolgál.
+            </li>
+            <li>Processzus önmaga replikálásával jöhet létre, a gyermek processzus megörökli a szülő processzus tulajdonosát, majd a setuid() rendszerhívás megváltozatja a processzus tulajdonosát.
+            </li>
+        </ul>
+        <h4>Felhasználó váltása su-val</h4>
+        <ul>
+            <li>Biztonsági megfontolásokból nem javasolt root jogú felhasználó használata. Célszerűbb a felhasználói jogosultsági szint ideiglenes megemelése.
+            </li>
+            <li>A felhasználóváltás su parancsal kilépés az exit parancsal lehetséges.
+            </li>
+            <li>A privilégium emelés elérhető a következő módon: az su bináris állomány setuid-ja a root felahszálóra hivatkozik. Így root által birtoklt processzusként fog elindulni. Ezután ellenőrizni fogja a jelszó érvényességét és meghívja setuid() rendszerhívást, hogy beállítsa a saját EUID-ját a kért felhasználónak megfelelően, ezután létrehoz egy új shell processzust a releváns felhasználóval
+            </li>
+        </ul>
+        <h4>Ideiglenes jogosultság emelés sudo-val</h4>
+        <ul>
+            <li>A sudo parancs az előbbiekhez hasonlóan működik, de finomabban szabályozza, hogy mely felhasználók emelhetik meg a jogosultságukat, és azok milyen parancsokat futtathatnak.
+            </li>
+            <li>A szabályokat az /etc/sudoers fájl tartalmazza.
+            </li>
+            <li>A sudo ellenőrzi fogja az aktuális felhasználó jelszavát, majd ezután létrehoz egy új shell processzust.
+            </li>
+        </ul>
+        <h4>Priviledge separation [2]</h4>
+        <ul>
+            <li>Probléma: egy processzus folyamatosan magasabb jogsoultsági szinten fut, mert néha olyan műveletet kell elvégeznie, 
+            amely szükségessé teszi ezt a megemelt jogosultsági szintet. Ez azonban magasabb biztonsági kockázatot is jelent.</li>
+            <li>A megoldás, hogy amikor a program először inicializálódik létrehozunk két socket-et, a soyketpair() rendszerhívással.</li>
+            <li>A fork rendszerhyvással létrehozunk egy gyermekprocesszust alacsonyabb jogosultságokkal.</li>
+            <li>A kommunikációs kapcsolat létrejön a két processzus közöt.</li>
+            <li>Amikor gyermekprocesszusnak privilegizált műveletet szükséges elvégezni megkéri 
+                rá a szülő processzust, hogy végezze el azt.</li>
+            <li>Mindennek az az eredménye, hogy a munka javarészét a gyeremek processzus végzi, 
+                a szülő pedig az idő nagyrészében csak várkozik. Így a biztonsági fenyegetettségnek kitettség csökkenthető.</li>
+        </ul>
+        <h4>chroot [3]</h4>
+        <ul>
+            <li>Minden processzus rendelkezik egy gyökérkönyvtárral.</li>
+            <li>A chroot parancs *nix rendszereken lehetővé teszi, hogy egy processzus számára a fájlrendszer gyökerét megváltoztassuk.</li>
+            <li>Egy processzus, ami a módsoított környezetben fut, nem tudja elérni az eredeti gyökér könyvtárat. Innen ered a “chroot jail” elnevezés.</li>
+        </ul>
+        <h3>MAC és DAC közti különbségek [4]</h3>
+        <h4>DAC (Discretionary Access Control)</h4>
+        <ul>
+            <li>A DAC identitás álapú hozzáférés szabályozás. A DAC védelmi mechanizmusai felhaszáló azonosítás által szabályozottak, pl felhasználónév és jelszó. A DAC önkényes mivel a tulajdos saját belátása szerint átadhat objektumokat, vagy authentikációs információkat más felhasználóknak. Magyarán a tulajdonos meghatározhatja a hozzáférési jogosultságokat.
+            </li>
+            <li>Tulajdonságok</li>
+            <ul>
+                <li>A felhasználó átadhatja az objektumait másik felhasználónak.
+                </li>
+                <li>Más felhasználó hozzáférésének attribútumai meghatározhatóak a felhasználó által.
+                </li>
+                <li>A hozzásférés megtagadható a felhasználótól több sikerteln hozzáférés kérési kísérlet után.
+                </li>
+                <li>Felhatalmazás nélküli felhasználók nem láthatják a védett objektumok bizonyos tulajdonságait, pl. fájl méret, könyvtár útvonalak, és fájl nevek.
+                </li>
+            </ul>
+        </ul>
+        <h4>MAC (Mandatory Access Control)</h4>
+        <ul>
+            <li>MAC típusú védelmet haszáló operációs rendszer a hozzáfárést a felhasználó azonosítását és valamilyen adatot figyelmbe véve biztosítja. 
+                A rendszer elérése érdekében a felhasználónak el kell küldenie a személyes adatait. 
+                A szabályrendszert és a biztonsági irányelveket a rendszer adminisztrátorai határozzák meg.
+            </li>
+            <li>Tulajdonságok:
+            </li>
+            <ul>
+            <li>A MAC iárányelvek segítik csökkenteni a rendszerhibákat.
+            </li>
+            <li>Szigorúbb biztonsági szabályok.
+            </li>
+            <li>A MAC rákényszeríti az operációs rendszert objektumok címkézésére.
+            </li>
+            <li>Az üzemeltetés nehezebb lehet, mivel csak az adminisztrátornak van jogosultsága a szabályrendszer megváltoztatásra.
+            </li>
+        </ul>
+        <li>Az SELinux egy MAC implementáctió.
+        </li>
+        </ul>
+        <h3>SELinux</h3>
+        <h4>SELinux</h4>
+        <ul>
+            <li>Az SELinux egy linux kernel modul, ami védelmi mechanizmust szolgáltat a hozzáférés szabályozás jobb működése, a biztonság fokozása érdekében.
+            </li>
+            <li>Az SELinux az Egyesült Államok Védelmi Minisztériuma által meghatározott hozzáférés szabályozási modell implentációja. Számos korábbi NSA projekten alapul.
+            </li>
+            <li>Minden olyan tevékenység, ami rendszerehívásokat vesz igénybe keresztülhalad az LSM (Linux Security Modules) keretrendszeren, annak eldöntése érdekében, 
+                hogy a hívás legitim-e vagy sem.
+            </li>
+            <li>Az SELinux az LSM része, így részt vesz a rendszerhívások ellenőrzési folyamatában. 
+            </li>
+            <li>A teljes szabályrendszert SELinux irányelvnek (SELinux policy) nevezzük. Ez a szabályrendszer meglehetősen összetett, így ezt egy bináris objektum 
+                (Access Vector Cache) tárolja, sebességnövelési megfontolásokból.
+            </li>
+            <li>Egy adott rendszerhívás kontextusa összehasenlításra kerül az AVC-ben tároltal, 
+                majd ennek erdéményeképp megtörténik az elfogadásra, vagy az elutasítása.
+            </li>
+        </ul>
+        <h4>SELinux kontextus (SELinux context)</h4>
+        <ul>
+            <li>Minden hálózati portnak, fájlrendszerbeli objektumnak és processzusnak megvan a maga SELinux kontextusa.
+            </li>
+            <li>A kontextusok hozzárendelése a fájlrendszerbeli objektumokhoz a címkézés (labeling).
+            </li>
+            <li>Az SELinux konextus 4 attribútumot tartalmaz.
+            </li>
+            <ul>
+                <li>felhasználó (user): az SELinux felhasználó független a linuxfelhasználó modeltől. Habár a hozzárendelés a linux modellen alapul.
+                </li>
+                <li>szerep (role): a felhasználó jogosultságai az irányelvekben meghatározott szerepen alapul. A szerep egy bizonyos tartományhoz való hozzáférést biztosít.
+                </li>
+                <li>tartomány (domain): A legtöbb mindent magában foglaló attribútum.</li>
+                <li>szint (level) (category): engedély szint. 
+                </li>
+            </ul>
+
+        </ul>
+        <h4>SELinux irányelvek (SELinux policies)</h4>
+        <ul>
+            <li>SELinux konextusok csoportosíttása:
+            </li>
+            <ul>
+                <li>célzott irányelvek (targeted policies): Az alapértelmezt az RH linxban. Egyszerű angolsággal meghatározott irányelvek pl. “allow httpd_t type processes to access httpd_log_t type fles for open and append operations”,
+                </li>
+                <li>mls policy: felhasználók és processzusok meg vannak címkézve egy engedély szinttel,
+                </li>
+                <li>minimal: a célzott irányelvek egyzerűsített változata.
+                </li>
+            </ul>
+        </ul>
+        <h4>SELinux működési módok</h4>
+        <ul>
+            <li>enforcing mode: minden kérés ellenőrzése az irányelvekkel szemben, majd jóváhagyása, vagy megtagadása, loggolás.
+            </li>
+            <li>permissive mode: csak loggolás.
+            </li>
+            <li>disabled: az SELinux modul teljes letiltása.
+            </li>
+        </ul>
+        <h4>SELinux boolean-ok</h4>
+        <ul>
+            <li>A szabályok bináris változók értékét is figyelembe veszik.
+            </li>
+            <li>Ezekkel a változókkal az irányelvek működése tovább finomtható. Pl. cgi script-ek futtatásának engedélyezése a httpd processzusok számára.
+            </li>
+        </ul>
+        <h3>A biztonság további fokozása</h3>
+        <ul>
+            <li>A hekkertámadások kivédése érdekében egy nyilvánosan elérhető kiszolgálón célszerű a tamadók dolgának megnehezítése.
+            </li>
+            <li>A biztonság tovább fokozható az ssh port megváltoztatásával.
+            </li>
+            <li>Erős jelszó használata a szótári támadások kivédése érdekében, és a jelszó redszeres változtatása az ismeretté vált jelszavak használatának mellőzése érdekében.
+            </li>
+            <li>Jelszavak tárolása titkosított formában.
+            </li>
+            <li>Tűzfal használata.
+            </li>
+            <li>Konténer technológiák használata.
+            </li>
+        </ul>
+       <h3>Irodalomjegyzék</h3> 
+       <p>[1] https://devopscube.com/wp-content/uploads/2016/05/permissions.png</p>
+       <p>[2] https://www.oreilly.com/library/view/secure-programming-cookbook/0596003943/ch01s04.html</p>
+       <p>[3] https://www.geeksforgeeks.org/chroot-command-in-linux-with-examples/</p>
+       <p>[4] https://www.geeksforgeeks.org/difference-between-dac-and-mac/</p>
+    </body>
+</html>
